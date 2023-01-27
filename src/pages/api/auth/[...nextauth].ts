@@ -9,26 +9,35 @@ export const authOptions = {
       clientId: process.env.GITHUB_ID,
       clientSecret: process.env.GITHUB_SECRET,
       authorization: {
-        params:{
+        params: {
           scope: 'read-user',
         },
       },
     }),
   ],
+  session:{
+    maxAge: 30 * 24 * 60 * 60,
+    updateAge: 24 * 60 * 60,
+    signinKey: process.env.JWT_SIGNING_PRIVATE_KEY,
+  },
   callbacks: {
-    async signIn({ user, account, profile}){
+    async signIn({ user, account, profile }) {
       const { email } = user;
-      await fauna.query(
-        q.Create(
-          q.Collection('users'),
-          {
-            data: {
-              email: email,
+      try {
+        await fauna.query(
+          q.Create(
+            q.Collection('users'),
+            {
+              data: {
+                email: email,
+              },
             },
-          },
+          )
         )
-      )
-      return true
+        return true
+      } catch {
+        return false
+      }
     },
   },
 }
